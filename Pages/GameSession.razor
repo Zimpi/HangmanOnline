@@ -1,0 +1,30 @@
+﻿@page "/session/{SessionGuid:guid}"
+@inject GameManager GameManager
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<h3>GameSession</h3>
+
+@code {
+
+    [Parameter]
+    public Guid SessionGuid { get; set; }
+
+    public Session CurrentSession { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        var session = GameManager.GetSession(SessionGuid);
+        if (session == null)
+        {
+            Snackbar.Add($"Diese Session wurde nicht gefunden oder existiert nicht mehr!", Severity.Error);
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        CurrentSession = session;
+    }
+
+}
