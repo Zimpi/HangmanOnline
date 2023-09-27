@@ -1,8 +1,8 @@
 ﻿namespace HangmanOnline.Models;
 
-public class GameManager
+public class Manager
 {
-    public GameManager()
+    public Manager()
     {
         CurrentSessions = new List<Session>();
     }

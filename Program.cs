@@ -18,7 +18,7 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
     config.SnackbarConfiguration.ClearAfterNavigation = false;
 });
-builder.Services.AddSingleton<GameManager>();
+builder.Services.AddSingleton<Manager>();
 
 
 var app = builder.Build();

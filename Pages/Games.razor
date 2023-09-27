@@ -1,5 +1,5 @@
 ﻿@page "/games"
-@inject GameManager GameManager
+@inject Manager Manager
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @implements IDisposable
@@ -11,14 +11,14 @@
     
     <MudText Typo="Typo.h5">Übersicht öffentlicher Sessions</MudText>
 
-    <MudText Typo="Typo.caption">@GameManager.CurrentSessions.Count Sessions Aktiv</MudText>
+    <MudText Typo="Typo.caption">@Manager.CurrentSessions.Count Sessions Aktiv</MudText>
 
     <div style="position: absolute; bottom: 30px; right: 30px">
         <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="NewSession" />
     </div>
 
     <MudStack Spacing="3">
-        @foreach (var session in GameManager.CurrentSessions)
+        @foreach (var session in Manager.CurrentSessions)
         {
             <MudCard>
                 <MudCardContent>
@@ -46,8 +46,8 @@
     {
         base.OnInitialized();
 
-        GameManager.SessionCreated += GameManager_SessionCreated;
-        GameManager.SessionRemoved += GameManager_SessionRemoved;
+        Manager.SessionCreated += GameManager_SessionCreated;
+        Manager.SessionRemoved += GameManager_SessionRemoved;
     }
 
     private void GameManager_SessionRemoved(Guid obj)
@@ -63,13 +63,13 @@
 
     public void Dispose()
     {
-        GameManager.SessionCreated -= GameManager_SessionCreated;
-        GameManager.SessionRemoved -= GameManager_SessionRemoved;
+        Manager.SessionCreated -= GameManager_SessionCreated;
+        Manager.SessionRemoved -= GameManager_SessionRemoved;
     }
 
     private void AddSession()
     {
-        GameManager.CreateSession("Parkplatz", "Jan");
+        Manager.CreateSession("Parkplatz", "Jan");
     }
 
     private void JoinPublicSession(Session session)
