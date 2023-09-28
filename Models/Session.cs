@@ -2,7 +2,7 @@
 
 namespace HangmanOnline.Models;
 
-public class Session : IDisposable
+public class Session
 {
     public Session(string wordToGuess, string hostName)
     {
@@ -23,13 +23,6 @@ public class Session : IDisposable
 
     public int PlayersCount => Players.Count;
     public int SessionCode { get; }
-
-    public void Dispose()
-    {
-        PlayerAdded = null;
-        PlayerRemoved = null;
-        GC.SuppressFinalize(this);
-    }
 
     public void GuessCharacter(char character)
     {
@@ -77,6 +70,11 @@ public class Session : IDisposable
     public List<Player> GetPlayers()
     {
         return Players;
+    }
+
+    public Player? GetPlayer(Guid playerId)
+    {
+        return Players.SingleOrDefault(p => p.PlayerId == playerId);
     }
 
     public void RemovePlayer(Guid playerId)

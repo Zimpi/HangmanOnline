@@ -8,13 +8,13 @@
 
 
 <div style="min-height: 90vh">
-    
+
     <MudText Typo="Typo.h5">Übersicht öffentlicher Sessions</MudText>
 
     <MudText Typo="Typo.caption">@Manager.CurrentSessions.Count Sessions Aktiv</MudText>
 
     <div style="position: absolute; bottom: 30px; right: 30px">
-        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="NewSession" />
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ShowSesseionDialog" />
     </div>
 
     <MudStack Spacing="3">
@@ -33,12 +33,18 @@
         }
     </MudStack>
 
+    <MudDialog @bind-IsVisible="NicknameDialogVisible">
+        <DialogContent>
+            <MudTextField  Placeholder="Wähle deinen Namen..." @bind-Value="@Spielername" />
+            <MudTextField Placeholder="Wähle ein Wort, was erraten werden soll" @bind-Value="@WordToGuess" />
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="() => NicknameDialogVisible = false">Abbrechen</MudButton>
+            <MudButton Color="Color.Primary" OnClick="NewSession">Neue Session erstellen</MudButton>
+        </DialogActions>
+    </MudDialog>
+
 </div>
-
-
-
-
-
 
 @code {
 
@@ -77,9 +83,35 @@
         NavigationManager.NavigateTo($"/session/{session.SessionGuid}");
     }
 
+    private void ShowSesseionDialog()
+    {
+        WordToGuess = "";
+        Spielername = "";
+        NicknameDialogVisible = true;
+    }
+
     private void NewSession()
     {
-        
+        if (string.IsNullOrWhiteSpace(Spielername))
+        {
+            Snackbar.Add("Bitte gib einen Namen ein!", Severity.Error);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(WordToGuess))
+        {
+            Snackbar.Add("Bitte gib ein Wort ein!", Severity.Error);
+            return;
+        }
+
+        var session = Manager.CreateSession(WordToGuess, Spielername);
+        var host = session.Host;
+        NavigationManager.NavigateTo($"/session/{session.SessionGuid}/{host.PlayerId}");
     }
+
+    public string? Spielername { get; set; }
+    public bool NicknameDialogVisible { get; set; }
+
+    public string? WordToGuess { get; set; }
 
 }
