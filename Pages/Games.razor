@@ -13,40 +13,59 @@
 
     <MudText Typo="Typo.caption">@Manager.CurrentSessions.Count Sessions Aktiv</MudText>
 
-    <div style="position: absolute; bottom: 30px; right: 30px">
+    <div style="position: absolute; bottom: 30px; right: 30px; z-index: 5;">
         <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ShowSesseionDialog" />
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddBox" OnClick="AddDummySession" />
     </div>
 
     <MudStack Spacing="3">
         @foreach (var session in Manager.CurrentSessions)
         {
-            <MudCard>
-                <MudCardContent>
-                    <MudText Typo="Typo.h6">Hangman Session</MudText>
-                    <MudText Typo="Typo.subtitle1">Host: @session.Host.PlayerName</MudText>
-                    <MudText Typo="Typo.subtitle2">@session.PlayersCount Spieler sind in dieser Session</MudText>
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton OnClick="() => JoinPublicSession(session)" Variant="Variant.Text" Color="Color.Primary">Session Beitreten</MudButton>
-                </MudCardActions>
-            </MudCard>
+            <AnimEffect InEffect="@Effect.SlideInUp">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">Hangman Session</MudText>
+                        <MudText Typo="Typo.subtitle1">Host: @session.Host.PlayerName</MudText>
+                        <MudText Typo="Typo.subtitle2">@session.PlayersCount Spieler sind in dieser Session</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton OnClick="() => ShowNicknameDialog(session)" Variant="Variant.Text" Color="Color.Primary">Session Beitreten</MudButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => Manager.RemoveSession(session.SessionGuid)"></MudIconButton>
+                    </MudCardActions>
+                </MudCard>
+            </AnimEffect>
         }
     </MudStack>
 
-    <MudDialog @bind-IsVisible="NicknameDialogVisible">
+    <MudDialog @bind-IsVisible="NewGameDialogVisible">
         <DialogContent>
-            <MudTextField  Placeholder="Wähle deinen Namen..." @bind-Value="@Spielername" />
-            <MudTextField Placeholder="Wähle ein Wort, was erraten werden soll" @bind-Value="@WordToGuess" />
+            <MudText Typo="Typo.h5">Neues Spiel erstellen</MudText>
+            <MudTextField Placeholder="Wähle deinen Namen..." @bind-Value="@Spielername"/>
+            <MudTextField Placeholder="Wähle ein Wort, was erraten werden soll" @bind-Value="@WordToGuess"/>
         </DialogContent>
         <DialogActions>
-            <MudButton OnClick="() => NicknameDialogVisible = false">Abbrechen</MudButton>
+            <MudButton OnClick="() => NewGameDialogVisible = false">Abbrechen</MudButton>
             <MudButton Color="Color.Primary" OnClick="NewSession">Neue Session erstellen</MudButton>
         </DialogActions>
     </MudDialog>
+    
+    <MudDialog @bind-IsVisible="NicknameDialogVisible">
+        <DialogContent>
+            <MudText Typo="Typo.h5">Spiel beitreten</MudText>
+            <MudTextField Placeholder="Wähle deinen Namen..." @bind-Value="@Spielername" />
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="() => NicknameDialogVisible = false">Abbrechen</MudButton>
+            <MudButton OnClick="JoinPublicSession" Color="Color.Primary" >Session beitreten</MudButton>
+        </DialogActions>
+    </MudDialog>
+
 
 </div>
 
 @code {
+
+    public Session? PublicSessionToJoin { get; set; }
 
     protected override void OnInitialized()
     {
@@ -64,7 +83,6 @@
     private void GameManager_SessionCreated(Session obj)
     {
         InvokeAsync(StateHasChanged);
-        Snackbar.Add($"Session {obj.SessionCode} wurde erstellt", Severity.Success);
     }
 
     public void Dispose()
@@ -73,21 +91,17 @@
         Manager.SessionRemoved -= GameManager_SessionRemoved;
     }
 
-    private void AddSession()
+    private void ShowNicknameDialog(Session session)
     {
-        Manager.CreateSession("Parkplatz", "Jan");
-    }
-
-    private void JoinPublicSession(Session session)
-    {
-        NavigationManager.NavigateTo($"/session/{session.SessionGuid}");
+        PublicSessionToJoin = session;
+        NicknameDialogVisible = true;
     }
 
     private void ShowSesseionDialog()
     {
         WordToGuess = "";
         Spielername = "";
-        NicknameDialogVisible = true;
+        NewGameDialogVisible = true;
     }
 
     private void NewSession()
@@ -110,8 +124,34 @@
     }
 
     public string? Spielername { get; set; }
-    public bool NicknameDialogVisible { get; set; }
+    public bool NewGameDialogVisible { get; set; }
 
     public string? WordToGuess { get; set; }
+
+    private void AddDummySession()
+    {
+        Manager.CreateSession("Parkplatz", "Jan");
+    }
+
+    public bool NicknameDialogVisible { get; set; }
+
+    private void JoinPublicSession()
+    {
+        if (string.IsNullOrWhiteSpace(Spielername))
+        {
+            Snackbar.Add("Bitte gib einen Namen ein!", Severity.Error);
+            return;
+        }
+
+        if (PublicSessionToJoin == null)
+        {
+            Snackbar.Add("Die Session existiert nicht", Severity.Error);
+            return;
+        }
+
+        var player = PublicSessionToJoin.AddPlayer(Spielername);
+
+        NavigationManager.NavigateTo($"/session/{PublicSessionToJoin.SessionGuid}/{player.PlayerId}");
+    }
 
 }

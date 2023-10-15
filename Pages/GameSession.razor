@@ -19,6 +19,8 @@
 
     public Player? Me { get; set; }
 
+    public bool IsHost { get; set; }
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -34,6 +36,7 @@
         if (session.Host.PlayerId == PlayerGuid)
         {
             Me = session.Host;
+            IsHost = true;
         }
         else
         {
@@ -53,14 +56,14 @@
         CurrentSession.PlayerRemoved += PlayerRemoved;
     }
 
-    private void PlayerRemoved(string obj)
+    private void PlayerRemoved(string playerName)
     {
-        throw new NotImplementedException();
+        Snackbar.Add($"{playerName} hat die Session verlassen", Severity.Warning);
     }
 
     private void PlayerAdded(Player obj)
     {
-        throw new NotImplementedException();
+        Snackbar.Add($"{obj.PlayerName} ist der Session beigetreten", Severity.Info);
     }
 
     private void MessageReceived(string nachricht, Severity type)
@@ -71,6 +74,8 @@
     public void Dispose()
     {
         Snackbar?.Dispose();
+        if (Me != null)
+            CurrentSession?.RemovePlayer(Me.PlayerId);
     }
 
 }

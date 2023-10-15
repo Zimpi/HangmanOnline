@@ -60,11 +60,12 @@ public class Session
         }
     }
 
-    public void AddPlayer(string playerName)
+    public Player AddPlayer(string playerName)
     {
         var newPlayer = new Player(playerName);
         Players.Add(newPlayer);
         PlayerAdded?.Invoke(newPlayer);
+        return newPlayer;
     }
 
     public List<Player> GetPlayers()
@@ -79,15 +80,27 @@ public class Session
 
     public void RemovePlayer(Guid playerId)
     {
-        var player = Players.FirstOrDefault(p => p.PlayerId == playerId);
-        if (player == null) return;
-        Players.Remove(player);
-        PlayerRemoved?.Invoke(player.PlayerName);
+        var player = GetPlayer(playerId);
+        if (player != null)
+        {
+            Players.Remove(player);
+            PlayerRemoved?.Invoke(player.PlayerName);
+        }
+
+        if (Host.PlayerId == playerId)
+        {
+            if (Players.Any())
+            {
+                Host = Players.First();
+                HostChanged?.Invoke(Host);
+            }
+        }
     }
 
     public event Action<Player>? PlayerAdded;
     public event Action<string>? PlayerRemoved;
     public event Action<string, Severity>? MessageReceived;
+    public event Action<Player>? HostChanged;
 
     protected virtual void OnMessageReceived(string message, Severity type)
     {

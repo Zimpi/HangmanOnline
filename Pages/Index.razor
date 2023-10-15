@@ -6,6 +6,25 @@
 <canvas id="hangmanCanvas" @ref="canvasReference"></canvas>
 <button @onclick="NextStep">Nächster Schritt</button>
 
+
+<br />
+<br />
+
+<MudSwitch Label="Show / Hide Card" @bind-Checked="ShowCard"></MudSwitch>
+
+<AnimEffect @bind-Show="ShowCard">
+   <MudCard>
+        <MudCardContent>
+            <MudText Typo="Typo.h6">Hangman Session</MudText>
+            <MudText Typo="Typo.subtitle1">Host: Bla</MudText>
+            <MudText Typo="Typo.subtitle2">5 Spieler sind in dieser Session</MudText>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Text" Color="Color.Primary">Session Beitreten</MudButton>
+        </MudCardActions>
+    </MudCard>
+</AnimEffect>
+
 @code {
     private ElementReference canvasReference;
     private int hangmanStep = 0; // Der aktuelle Schritt des Hangman
@@ -26,4 +45,7 @@
             await JSRuntime.InvokeVoidAsync("canvasFunctions.drawHangman", "hangmanCanvas", hangmanStep);
         }
     }
+
+    public bool ShowCard { get; set; } = true;
+
 }

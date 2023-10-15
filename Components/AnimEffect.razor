@@ -1,0 +1,71 @@
+﻿@if (Show && ChildContent != null)
+{
+    <Animation Effect="InEffect" Speed="Speed">
+        @ChildContent
+    </Animation>
+}
+else if (Show && ChildContent == null)
+{
+    @if (Display)
+    {
+        <Animation OnAnimationEnd="() => Display = false" Effect="OutEffect" Speed="Speed">
+            @OldContent
+        </Animation>
+    }
+}
+else
+{
+    @if (Display)
+    {
+        <Animation OnAnimationEnd="() => Display = false" Effect="OutEffect" Speed="Speed">
+            @OldContent
+        </Animation>
+    }   
+}
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        Display = Show;
+        OldContent = ChildContent;
+    }
+
+    [Parameter]
+    public TimeSpan Speed { get; set; } = TimeSpan.FromMilliseconds(500);
+
+    [Parameter]
+    public AnimationEffect InEffect { get; set; } = Effect.FadeIn;
+
+    [Parameter]
+    public AnimationEffect OutEffect { get; set; } = Effect.FadeOut;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private RenderFragment? OldContent { get; set; }
+
+    [Parameter]
+    public bool Show
+    {
+        get => _show;
+        set
+        {
+            if (_show == value) return;
+            _show = value;
+            ShowChanged.InvokeAsync(value);
+            if (value)
+            {
+                Display = true;
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<bool> ShowChanged { get; set; }
+
+
+    private bool Display { get; set; }
+
+    private bool _show = true;
+}
